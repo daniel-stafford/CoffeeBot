@@ -1,29 +1,62 @@
+function shuffle(array) {
+  let currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+  return array;
+}
+
 function getLuckyPeople(){
-  //get the list of our office coffee drinkers from google sheets
+  // Get the list of our office coffee drinkers from google sheets
   const coffeeDrinkers = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('people').getDataRange().getValues();
-  //randomly shuffle the coffee drinkers array and extract the first two names
-  const luckyWinners = coffeeDrinkers
-  .map((a) => ({sort: Math.random(), value: a}))
-  .sort((a, b) => a.sort - b.sort)
-  .map((a) => a.value)
-  .slice(0,2)
+
+  // Randomly shuffle the coffee drinkers array and extract the first two names
+  const shuffledArray = shuffle(coffeeDrinkers)
+  const luckyWinners = shuffledArray.slice(0,3)
   return luckyWinners
 }
 
 function getMessage(){
-  const [winnerOne, winnerTwo] = getLuckyPeople()
-  //create CoffeeBot's dialogue
-  const message = `@channel Hyvää huomenta! As your CoffeBot overlord, I have randomly selected ${winnerOne}to take care of our coffee this morning. ${winnerTwo} will make another pot in the afternoon. Beep bop boop. Have a nice day!`
-  return message
-}
+  const [winnerOne, winnerTwo, winnerThree] = getLuckyPeople()
 
-//this function is set to trigger once per day between 0800-0900.
+  // Create CoffeeBot's dialogue
+  return`@channel Well hello there, FT3! Rumor has it that you missed me!
+
+  I was on brief Robot vacation - a week in Thailand with the Boston Dynamics dog - but am now back to serve you.
+
+  Since you have received your very own coffee machine, I hear coffee consumption has increased dramatically!
+
+  To keep everyone sufficiently caffeinated, I am now randomly assigning three people per day and am using a new and improved randomization algorithm called the Fisher-Yates (aka Knuth) shuffle.
+
+  Beep bop boop!  I have selected the following humans:
+
+  @${winnerOne} will make us coffee this morning.
+
+  @${winnerTwo} will make another pot around lunch.
+
+  @${winnerThree} will make us mid-afternoon coffee.
+
+  Bop Boop Beep! Have a nice day.`
+  }
+
+// CoffeeBot is set to trigger once per day between 0800-0900.
 function sendMessage(){
-  //don't trigger on the weekend
-  const day = new Date()
-  if (day.getDay()===6 || day.getDay()===0) return Logger.log("CoffeeBot doesn't work on the weekends!")
-  //post message on slack channel
-  const slackWebhookURL = 'https://hooks.slack.com/services/INSERTYOURIDHERE'
+  const today = new Date()
+  // Don't trigger on the weekend
+  //if (today.getDay()===6 || today.getDay()===0) return Logger.log("CoffeeBot doesn't work on the weekends!")
+
+  // Post message on slack channel
+  const slackWebhookURL = 'https://hooks.slack.com/services/<INSERYOURIDHERE>'
   const payload = {
     'link_names': 1
   }
@@ -32,7 +65,7 @@ function sendMessage(){
     'contentType': 'application/json'
   }
   payload.text = getMessage()
-  Logger.log("text", payload.text)
+  Logger.log(payload.text)
   opts.payload = JSON.stringify(payload)
   UrlFetchApp.fetch(slackWebhookURL, opts)
 }
