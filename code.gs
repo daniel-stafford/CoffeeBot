@@ -53,7 +53,7 @@ function getMessage(){
 function sendMessage(){
   const today = new Date()
   // Don't trigger on the weekend
-  //if (today.getDay()===6 || today.getDay()===0) return Logger.log("CoffeeBot doesn't work on the weekends!")
+  if (today.getDay()===6 || today.getDay()===0) return Logger.log("CoffeeBot doesn't work on the weekends!")
 
   // Post message on slack channel
   const slackWebhookURL = 'https://hooks.slack.com/services/<INSERYOURIDHERE>'
